@@ -42,12 +42,12 @@ class NN:
         # b2 = np.random.rand(self.__layer_size[2], 1) - 0.5
         # w3 = np.random.rand(self.__layer_size[3], self.__layer_size[2]) - 0.5
         # b3 = np.random.rand(self.__layer_size[3], 1) - 0.5
-        w1 = np.random.normal(size=(self.__layer_size[1], self.__layer_size[0])) * np.sqrt(1. / self.__layer_size[0])
-        b1 = np.random.normal(size=(self.__layer_size[1], 1)) * np.sqrt(1. / self.__layer_size[1])
-        w2 = np.random.normal(size=(self.__layer_size[2], self.__layer_size[1])) * np.sqrt(1. / ( self.__layer_size[2] * 2. ))
-        b2 = np.random.normal(size=(self.__layer_size[2], 1)) * np.sqrt(1. / self.__layer_size[2])
-        w3 = np.random.normal(size=(self.__layer_size[3], self.__layer_size[2])) * np.sqrt(1. / ( self.__layer_size[3] * 2. ))
-        b3 = np.random.normal(size=(self.__layer_size[3], 1)) * np.sqrt(1. / self.__layer_size[3])
+        w1 = np.random.normal(size=(self.__layer_size[1], self.__layer_size[0])).astype(np.float64) * np.sqrt(1. / self.__layer_size[0])
+        b1 = np.random.normal(size=(self.__layer_size[1], 1)).astype(np.float64) * np.sqrt(1. / self.__layer_size[1])
+        w2 = np.random.normal(size=(self.__layer_size[2], self.__layer_size[1])).astype(np.float64) * np.sqrt(1. / ( self.__layer_size[2] * 2. ))
+        b2 = np.random.normal(size=(self.__layer_size[2], 1)).astype(np.float64) * np.sqrt(1. / self.__layer_size[2])
+        w3 = np.random.normal(size=(self.__layer_size[3], self.__layer_size[2])).astype(np.float64) * np.sqrt(1. / ( self.__layer_size[3] * 2. ))
+        b3 = np.random.normal(size=(self.__layer_size[3], 1)).astype(np.float64) * np.sqrt(1. / self.__layer_size[3])
         return w1, b1, w2, b2, w3, b3
 
     # print model parameters
@@ -159,7 +159,7 @@ class NN:
         return w1, b1, w2, b2, w3, b3
 
     # velocities, weights and biases update for Adam
-    def __update_parameters_Adam__(self, m_w1, m_b1, m_w2, m_b2, m_w3, m_b3,
+    def __update_parameters_Adam__(self, t, m_w1, m_b1, m_w2, m_b2, m_w3, m_b3,
                                             v_w1, v_b1, v_w2, v_b2, v_w3, v_b3,
                                             mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3,
                                             vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3,
@@ -180,19 +180,19 @@ class NN:
         v_w3 = self.__beta2 * v_w3 + (1. - self.__beta2) * dw3**2
         v_b3 = self.__beta2 * v_b3 + (1. - self.__beta2) * db3**2
 
-        mhat_w1 = m_w1 / (1. - self.__beta1)
-        mhat_b1 = m_b1 / (1. - self.__beta1)
-        mhat_w2 = m_w2 / (1. - self.__beta1)
-        mhat_b2 = m_b2 / (1. - self.__beta1)
-        mhat_w3 = m_w3 / (1. - self.__beta1)
-        mhat_b3 = m_b3 / (1. - self.__beta1)
+        mhat_w1 = m_w1 / (1. - self.__beta1**t + self.__eps)
+        mhat_b1 = m_b1 / (1. - self.__beta1**t + self.__eps)
+        mhat_w2 = m_w2 / (1. - self.__beta1**t + self.__eps)
+        mhat_b2 = m_b2 / (1. - self.__beta1**t + self.__eps)
+        mhat_w3 = m_w3 / (1. - self.__beta1**t + self.__eps)
+        mhat_b3 = m_b3 / (1. - self.__beta1**t + self.__eps)
 
-        vhat_w1 = v_w1 / (1. - self.__beta2)
-        vhat_b1 = v_b1 / (1. - self.__beta2)
-        vhat_w2 = v_w2 / (1. - self.__beta2)
-        vhat_b2 = v_b2 / (1. - self.__beta2)
-        vhat_w3 = v_w3 / (1. - self.__beta2)
-        vhat_b3 = v_b3 / (1. - self.__beta2)   
+        vhat_w1 = v_w1 / (1. - self.__beta2**t + self.__eps)
+        vhat_b1 = v_b1 / (1. - self.__beta2**t + self.__eps)
+        vhat_w2 = v_w2 / (1. - self.__beta2**t + self.__eps)
+        vhat_b2 = v_b2 / (1. - self.__beta2**t + self.__eps)
+        vhat_w3 = v_w3 / (1. - self.__beta2**t + self.__eps)
+        vhat_b3 = v_b3 / (1. - self.__beta2**t + self.__eps)   
         
         w1 = w1 - self.__alpha * mhat_w1 / (np.sqrt(vhat_w1) + self.__eps)
         b1 = b1 - self.__alpha * mhat_b1 / (np.sqrt(vhat_b1) + self.__eps)
@@ -256,7 +256,8 @@ class NN:
         w1, b1, w2, b2, w3, b3 = self.initialze_parameters()
         
         for i in range(self.__epoch):
-            
+
+            # shuffle data
             data = np.c_[Y, X.T]
             np.random.shuffle(data)
             data = data.T
@@ -264,6 +265,8 @@ class NN:
             X_new = data[1:, :]
 
             for j in range(0, Y.size, self.__batch_size):
+
+                # select batch
                 X_batch = X_new[:, j:j+self.__batch_size]
                 Y_batch = Y_new[j:j+self.__batch_size]
             
@@ -282,14 +285,20 @@ class NN:
 
     # conduct adam 
     def adam(self, X, Y):
+        
         w1, b1, w2, b2, w3, b3 = self.initialze_parameters()
+        
         v_w1, v_b1, v_w2, v_b2, v_w3, v_b3 = 0., 0., 0., 0., 0., 0.
+        
         m_w1, m_b1, m_w2, m_b2, m_w3, m_b3 = 0., 0., 0., 0., 0., 0.
+        
         vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3 = 0., 0., 0., 0., 0., 0.
+        
         mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3 = 0., 0., 0., 0., 0., 0.
         
         for i in range(self.__epoch):
-            
+
+            # shuffle data
             data = np.c_[Y, X.T]
             np.random.shuffle(data)
             data = data.T
@@ -297,6 +306,8 @@ class NN:
             X_new = data[1:, :]
 
             for j in range(0, Y.size, self.__batch_size):
+
+                # select batch
                 X_batch = X_new[:, j:j+self.__batch_size]
                 Y_batch = Y_new[j:j+self.__batch_size]
             
@@ -307,7 +318,7 @@ class NN:
                 mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3,
                 vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3,
                 w1, b1, w2, b2, w3, b3 = self.__update_parameters_Adam__(
-                        m_w1, m_b1, m_w2, m_b2, m_w3, m_b3,
+                        i, m_w1, m_b1, m_w2, m_b2, m_w3, m_b3,
                         v_w1, v_b1, v_w2, v_b2, v_w3, v_b3,
                         mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3,
                         vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3,

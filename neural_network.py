@@ -93,15 +93,15 @@ class NN:
     def __forward_propagation__(self, w1, b1, w2, b2, w3, b3, X):
 
         # hidden layer 1
-        z1 = w1.dot(X) + b1
+        z1 = w1.dot(X) + b1  # (N1, N0) x (N0, Ns) + (N1) = (N1, Ns)
         a1 = self.factivation(z1)
 
         # hidden layer 2
-        z2 = w2.dot(a1) + b2
+        z2 = w2.dot(a1) + b2 # (N2, N1) x (N1, Ns) + (N2) = (N2, Ns)
         a2 = self.factivation(z2)
 
         # output layer
-        z3 = w3.dot(a2) + b3
+        z3 = w3.dot(a2) + b3 # (N3, N2) x (N2, Ns) + (N3) = (N3, Ns)
         a3 = self.softmax(z3)
         
         return z1, a1, z2, a2, z3, a3
@@ -238,6 +238,7 @@ class NN:
         for i in range(self.__epoch):
             z1, a1, z2, a2, z3, a3 = self.__forward_propagation__(w1, b1, w2, b2, w3, b3, X)
             dw1, db1, dw2, db2, dw3, db3 = self.__backward_propagation__(z1, a1, z2, a2, z3, a3, w1, w2, w3, X, Y)
+            # print(db1, db2, db3)
             w1, b1, w2, b2, w3, b3 = self.__update_parameters__(w1, b1, w2, b2, w3, b3, dw1, db1, dw2, db2, dw3, db3)
             
             if i % 100 == 0:

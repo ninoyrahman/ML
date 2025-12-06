@@ -4,6 +4,7 @@ Created on Feb 06, 2025
 @author: ninoy
 '''
 import numpy as np
+import cupy as cp
 
 # class for neural network with two hidden layer
 class NN:
@@ -35,19 +36,13 @@ class NN:
 
     # weight and biases initialization
     def initialze_parameters(self):
-        np.random.seed(42)
-        # w1 = np.random.rand(self.__layer_size[1], self.__layer_size[0]) - 0.5
-        # b1 = np.random.rand(self.__layer_size[1], 1) - 0.5
-        # w2 = np.random.rand(self.__layer_size[2], self.__layer_size[1]) - 0.5
-        # b2 = np.random.rand(self.__layer_size[2], 1) - 0.5
-        # w3 = np.random.rand(self.__layer_size[3], self.__layer_size[2]) - 0.5
-        # b3 = np.random.rand(self.__layer_size[3], 1) - 0.5
-        w1 = np.random.normal(size=(self.__layer_size[1], self.__layer_size[0])).astype(np.float64) * np.sqrt(1. / self.__layer_size[0])
-        b1 = np.random.normal(size=(self.__layer_size[1], 1)).astype(np.float64) * np.sqrt(1. / self.__layer_size[1])
-        w2 = np.random.normal(size=(self.__layer_size[2], self.__layer_size[1])).astype(np.float64) * np.sqrt(1. / ( self.__layer_size[2] * 2. ))
-        b2 = np.random.normal(size=(self.__layer_size[2], 1)).astype(np.float64) * np.sqrt(1. / self.__layer_size[2])
-        w3 = np.random.normal(size=(self.__layer_size[3], self.__layer_size[2])).astype(np.float64) * np.sqrt(1. / ( self.__layer_size[3] * 2. ))
-        b3 = np.random.normal(size=(self.__layer_size[3], 1)).astype(np.float64) * np.sqrt(1. / self.__layer_size[3])
+        cp.random.seed(42)
+        w1 = cp.random.normal(size=(self.__layer_size[1], self.__layer_size[0])).astype(cp.float64) * cp.sqrt(1. / self.__layer_size[0])
+        b1 = cp.random.normal(size=(self.__layer_size[1], 1)).astype(cp.float64) * cp.sqrt(1. / self.__layer_size[1])
+        w2 = cp.random.normal(size=(self.__layer_size[2], self.__layer_size[1])).astype(cp.float64) * cp.sqrt(1. / ( self.__layer_size[2] * 2. ))
+        b2 = cp.random.normal(size=(self.__layer_size[2], 1)).astype(cp.float64) * cp.sqrt(1. / self.__layer_size[2])
+        w3 = cp.random.normal(size=(self.__layer_size[3], self.__layer_size[2])).astype(cp.float64) * cp.sqrt(1. / ( self.__layer_size[3] * 2. ))
+        b3 = cp.random.normal(size=(self.__layer_size[3], 1)).astype(cp.float64) * cp.sqrt(1. / self.__layer_size[3])
         return w1, b1, w2, b2, w3, b3
 
     # print model parameters
@@ -70,9 +65,9 @@ class NN:
     # activation function ReLU/sigmoid
     def factivation(self, z):
         if self.__activation == 'ReLU':
-            return np.maximum(z, 0)
+            return cp.maximum(z, 0)
         else:
-            return 1.0 / (1.0 + np.exp(-z))
+            return 1.0 / (1.0 + cp.exp(-z))
 
     # derivative of activation function ReLU/sigmoid
     def dfactivation(self, z):
@@ -83,7 +78,7 @@ class NN:
 
     # softmax function at output layer
     def softmax(self, z):
-        return np.exp(z) / sum(np.exp(z))
+        return cp.exp(z) / sum(cp.exp(z))
 
     # softmax function at output layer
     def dsoftmax(self, z):
@@ -108,19 +103,19 @@ class NN:
 
     # label to index transform
     def __one_hot__(self, Y):
-        one_hot_Y = np.zeros((Y.size, self.__label_number))
-        one_hot_Y[np.arange(Y.size), Y] = 1
+        one_hot_Y = cp.zeros((Y.size, self.__label_number))
+        one_hot_Y[cp.arange(Y.size), Y] = 1
         # one_hot_Y[:, 0] = Y
         return one_hot_Y.T
 
     # clip gradient
     def __gradient_clipping__(self, dw1, db1, dw2, db2, dw3, db3):
-        dw1 = np.clip(dw1, -self.__gradient_clip, self.__gradient_clip)
-        db1 = np.clip(db1, -self.__gradient_clip, self.__gradient_clip)
-        dw2 = np.clip(dw2, -self.__gradient_clip, self.__gradient_clip)
-        db2 = np.clip(db2, -self.__gradient_clip, self.__gradient_clip)
-        dw3 = np.clip(dw3, -self.__gradient_clip, self.__gradient_clip)
-        db3 = np.clip(db3, -self.__gradient_clip, self.__gradient_clip)
+        dw1 = cp.clip(dw1, -self.__gradient_clip, self.__gradient_clip)
+        db1 = cp.clip(db1, -self.__gradient_clip, self.__gradient_clip)
+        dw2 = cp.clip(dw2, -self.__gradient_clip, self.__gradient_clip)
+        db2 = cp.clip(db2, -self.__gradient_clip, self.__gradient_clip)
+        dw3 = cp.clip(dw3, -self.__gradient_clip, self.__gradient_clip)
+        db3 = cp.clip(db3, -self.__gradient_clip, self.__gradient_clip)
         return dw1, db1, dw2, db2, dw3, db3
         
     # backward propagation
@@ -131,17 +126,17 @@ class NN:
         # output layer to hidden layer 2
         delta = (1.0 / m) * (a3 - one_hot_Y)
         dw3 = delta.dot(a2.T)
-        db3 = np.array([np.sum(delta)])
+        db3 = cp.array([cp.sum(delta)])
 
         # hidden layer 2 to hidden layer 1
         delta1 = w3.T.dot(delta) * self.dfactivation(z2)
         dw2 = delta1.dot(a1.T)
-        db2 = np.array([np.sum(delta1)])
+        db2 = cp.array([cp.sum(delta1)])
 
         # hidden layer 1 to input layer
         delta2 = w2.T.dot(delta1) * self.dfactivation(z1)
         dw1 = delta2.dot(X.T)
-        db1 = np.array([np.sum(delta2)])
+        db1 = cp.array([cp.sum(delta2)])
 
         if self.__gradient_clip != None:
             return self.__gradient_clipping__(dw1, db1, dw2, db2, dw3, db3)
@@ -193,24 +188,24 @@ class NN:
         vhat_b2 = v_b2 / (1. - self.__beta2**t)
         vhat_w3 = v_w3 / (1. - self.__beta2**t)
         vhat_b3 = v_b3 / (1. - self.__beta2**t)
-
-        w1 = w1 - self.__alpha * mhat_w1 / (np.sqrt(vhat_w1) + self.__eps)
-        b1 = b1 - self.__alpha * mhat_b1 / (np.sqrt(vhat_b1) + self.__eps)
-        w2 = w2 - self.__alpha * mhat_w2 / (np.sqrt(vhat_w2) + self.__eps)
-        b2 = b2 - self.__alpha * mhat_b2 / (np.sqrt(vhat_b2) + self.__eps)
-        w3 = w3 - self.__alpha * mhat_w3 / (np.sqrt(vhat_w3) + self.__eps)
-        b3 = b3 - self.__alpha * mhat_b3 / (np.sqrt(vhat_b1) + self.__eps)
+        
+        w1 = w1 - self.__alpha * mhat_w1 / (cp.sqrt(vhat_w1) + self.__eps)
+        b1 = b1 - self.__alpha * mhat_b1 / (cp.sqrt(vhat_b1) + self.__eps)
+        w2 = w2 - self.__alpha * mhat_w2 / (cp.sqrt(vhat_w2) + self.__eps)
+        b2 = b2 - self.__alpha * mhat_b2 / (cp.sqrt(vhat_b2) + self.__eps)
+        w3 = w3 - self.__alpha * mhat_w3 / (cp.sqrt(vhat_w3) + self.__eps)
+        b3 = b3 - self.__alpha * mhat_b3 / (cp.sqrt(vhat_b1) + self.__eps)
         
         return m_w1, m_b1, m_w2, m_b2, m_w3, m_b3, v_w1, v_b1, v_w2, v_b2, v_w3, v_b3, mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3, vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3, w1, b1, w2, b2, w3, b3
 
     # get prediction
     def __get_predictions__(self, a3):
-        return np.argmax(a3, 0)
+        return cp.argmax(a3, 0)
 
     # get accuracy
     def get_accuracy(self, predictions, Y):
-        return np.sum(predictions == Y) / Y.size
-        # return np.sum(np.abs(predictions/Y - 1.)) / Y.size
+        return cp.sum(predictions == Y) / Y.size
+        # return cp.sum(cp.abs(predictions/Y - 1.)) / Y.size
 
     # get loss
     def get_loss(self, predictions, Y):
@@ -218,7 +213,7 @@ class NN:
 
     # get ce loss
     def get_ce_loss(self, a, Y):
-        return -np.sum( np.log( a[Y, range(a.shape[1])] ) ) / Y.size
+        return -cp.sum( cp.log( a[Y, range(a.shape[1])] ) ) / Y.size
 
     # evaluate prediction
     def predictions(self, X, w1, b1, w2, b2, w3, b3):
@@ -234,14 +229,13 @@ class NN:
         for i in range(self.__epoch):
             z1, a1, z2, a2, z3, a3 = self.__forward_propagation__(w1, b1, w2, b2, w3, b3, X)
             dw1, db1, dw2, db2, dw3, db3 = self.__backward_propagation__(z1, a1, z2, a2, z3, a3, w1, w2, w3, X, Y)
+            # print(db1, db2, db3)
             w1, b1, w2, b2, w3, b3 = self.__update_parameters__(w1, b1, w2, b2, w3, b3, dw1, db1, dw2, db2, dw3, db3)
             
             predictions = self.predictions(X, w1, b1, w2, b2, w3, b3)
             acc = self.get_accuracy(predictions, Y)
-            ce_loss = self.get_ce_loss(a3, Y)
-            # loss = self.get_loss(predictions, Y)
             if i % 100 == 0:
-                print("Epoch: ", i, "Accuracy: ", acc, "CE Loss: ", ce_loss)
+                print("Epoch: ", i, "Accuracy: ", acc)
             if acc > self.__accuracy:
                 return w1, b1, w2, b2, w3, b3
                 
@@ -250,14 +244,14 @@ class NN:
     # conduct stochastic gradient descent
     def stochastic_gradient_descent(self, X, Y):
         w1, b1, w2, b2, w3, b3 = self.initialze_parameters()
-        
+
         for i in range(self.__epoch):
 
             # shuffle data
-            data = np.c_[Y, X.T]
-            np.random.shuffle(data)
+            data = cp.c_[Y, X.T]
+            cp.random.shuffle(data)
             data = data.T
-            Y_new = np.array(data[0, :], dtype=np.int32)
+            Y_new = cp.array(data[0, :], dtype=cp.int32)
             X_new = data[1:, :]
 
             for j in range(0, Y.size, self.__batch_size):
@@ -296,10 +290,10 @@ class NN:
         for i in range(self.__epoch):
 
             # shuffle data
-            data = np.c_[Y, X.T]
-            np.random.shuffle(data)
+            data = cp.c_[Y, X.T]
+            cp.random.shuffle(data)
             data = data.T
-            Y_new = np.array(data[0, :], dtype=np.int32)
+            Y_new = cp.array(data[0, :], dtype=cp.int32)
             X_new = data[1:, :]
 
             for j in range(0, Y.size, self.__batch_size):
@@ -311,6 +305,7 @@ class NN:
                 z1, a1, z2, a2, z3, a3 = self.__forward_propagation__(w1, b1, w2, b2, w3, b3, X_batch)
                 dw1, db1, dw2, db2, dw3, db3 = self.__backward_propagation__(z1, a1, z2, a2, z3, a3, w1, w2, w3, X_batch, Y_batch)
                 m_w1, m_b1, m_w2, m_b2, m_w3, m_b3, v_w1, v_b1, v_w2, v_b2, v_w3, v_b3, mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3, vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3, w1, b1, w2, b2, w3, b3 = self.__update_parameters_Adam__(i+1, m_w1, m_b1, m_w2, m_b2, m_w3, m_b3, v_w1, v_b1, v_w2, v_b2, v_w3, v_b3, mhat_w1, mhat_b1, mhat_w2, mhat_b2, mhat_w3, mhat_b3, vhat_w1, vhat_b1, vhat_w2, vhat_b2, vhat_w3, vhat_b3, w1, b1, w2, b2, w3, b3, dw1, db1, dw2, db2, dw3, db3)
+            
             
             predictions = self.predictions(X, w1, b1, w2, b2, w3, b3)
             acc = self.get_accuracy(predictions, Y)

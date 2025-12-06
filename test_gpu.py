@@ -33,7 +33,7 @@ Y_test_d = cp.asarray(Y_test)
 print('training size : ', X_train.shape, Y_train.shape)
 print('test size     : ', X_test.shape,  Y_test.shape)
 
-layer_size=[784, 1025, 512, 10]
+layer_size=[784, 2048, 1025, 10]
 print('layer size    : ', layer_size)
 
 # gradient descent - neural network

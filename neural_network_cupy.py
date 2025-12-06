@@ -237,6 +237,7 @@ class NN:
             if i % 100 == 0:
                 print("Epoch: ", i, "Accuracy: ", acc)
             if acc > self.__accuracy:
+                print("Epoch: ", i, "Accuracy: ", acc)
                 return w1, b1, w2, b2, w3, b3
                 
         return w1, b1, w2, b2, w3, b3

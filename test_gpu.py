@@ -4,7 +4,9 @@ import cupy as cp
 import pandas as pd
 import time
 
-from neural_network_cupy import NN
+from gradient_descent import gradient_descent
+from stochastic_gradient_descent import stochastic_gradient_descent
+from adam import adam
 
 # read mnist data
 data = pd.read_csv('data/mnist.csv')
@@ -39,10 +41,10 @@ print('layer size    : ', layer_size)
 # gradient descent - neural network
 print('')
 print('gradient descent')
-nn = NN(label_number=10, alpha=0.01, epoch=500, activation='ReLU', layer_size=layer_size)
+nn = gradient_descent(label_number=10, alpha=0.01, epoch=500, activation='ReLU', layer_size=layer_size)
 nn.print_parameter()
 t = time.process_time()
-W1, b1, W2, b2, W3, b3 = nn.gradient_descent(X_train_d, Y_train_d)
+W1, b1, W2, b2, W3, b3 = nn.train(X_train_d, Y_train_d)
 elapsed_time = time.process_time() - t
 dev_predictions = nn.predictions(X_test_d, W1, b1, W2, b2, W3, b3)
 print("Accuracy: ", nn.get_accuracy(dev_predictions, Y_test_d), "Loss: ", nn.get_loss(dev_predictions, Y_test_d))
@@ -51,10 +53,10 @@ print('Elapsed time(GD): ', elapsed_time)
 # stochastic gradient descent - neural network
 print('')
 print('stochastic gradient descent')
-nn = NN(label_number=10, alpha=0.01, epoch=500, activation='ReLU', layer_size=layer_size, accuracy=0.9, batch_size=32, gradient_clip=1.0)
+nn = stochastic_gradient_descent(label_number=10, alpha=0.01, epoch=500, activation='ReLU', layer_size=layer_size, accuracy=0.9, batch_size=32, gradient_clip=1.0)
 nn.print_parameter()
 t = time.process_time()
-W1, b1, W2, b2, W3, b3 = nn.stochastic_gradient_descent(X_train_d, Y_train_d)
+W1, b1, W2, b2, W3, b3 = nn.train(X_train_d, Y_train_d)
 elapsed_time = time.process_time() - t
 dev_predictions = nn.predictions(X_test_d, W1, b1, W2, b2, W3, b3)
 print("Accuracy: ", nn.get_accuracy(dev_predictions, Y_test_d), "Loss: ", nn.get_loss(dev_predictions, Y_test_d))
@@ -63,10 +65,10 @@ print('Elapsed time(SGD): ', elapsed_time)
 # adam - neural network
 print('')
 print('adam')
-nn = NN(label_number=10, alpha=0.01, epoch=500, activation='ReLU', layer_size=layer_size, accuracy=0.9, batch_size=Y_train.size, gradient_clip=1.0, beta1=0.9, beta2=0.999)
+nn = adam(label_number=10, alpha=0.01, epoch=500, activation='ReLU', layer_size=layer_size, accuracy=0.9, batch_size=Y_train.size, gradient_clip=1.0, beta1=0.9, beta2=0.999)
 nn.print_parameter()
 t = time.process_time()
-W1, b1, W2, b2, W3, b3 = nn.adam(X_train_d, Y_train_d)
+W1, b1, W2, b2, W3, b3 = nn.train(X_train_d, Y_train_d)
 elapsed_time = time.process_time() - t
 dev_predictions = nn.predictions(X_test_d, W1, b1, W2, b2, W3, b3)
 print("Accuracy: ", nn.get_accuracy(dev_predictions, Y_test_d), "Loss: ", nn.get_loss(dev_predictions, Y_test_d))

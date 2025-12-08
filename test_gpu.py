@@ -3,10 +3,15 @@ import numpy as np
 import cupy as cp
 import pandas as pd
 import time
+import sys
 
 from gradient_descent import gradient_descent
 from stochastic_gradient_descent import stochastic_gradient_descent
 from adam import adam
+
+orig_stdout = sys.stdout
+f = open('out.txt', 'w')
+sys.stdout = f
 
 # read mnist data
 data = pd.read_csv('data/mnist.csv')
@@ -73,3 +78,6 @@ elapsed_time = time.process_time() - t
 dev_predictions = nn.predictions(X_test_d, W1, b1, W2, b2, W3, b3)
 print("Accuracy: ", nn.get_accuracy(dev_predictions, Y_test_d), "Loss: ", nn.get_loss(dev_predictions, Y_test_d))
 print('Elapsed time(adam): ', elapsed_time)
+
+sys.stdout = orig_stdout
+f.close()

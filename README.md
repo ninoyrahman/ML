@@ -15,3 +15,9 @@ Optimization: Gradient clipping for stability
 Performance: GPU-accelerated via CUDA and CuPy library
 
 Validation: Includes MNIST handwritten digit classification example
+
+Test Command:
+```bash
+python test_gpu.py
+python test_cpu.py
+```

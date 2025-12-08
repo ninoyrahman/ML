@@ -1,0 +1,4 @@
+cupy_cuda12x==13.6.0
+numba==0.62.1
+numpy==2.3.5
+pandas==2.3.3

@@ -20,13 +20,9 @@ RUN find /opt/conda/ -follow -type f -name '*.a' -delete
 RUN find /opt/conda/ -follow -type f -name '*.js.map' -delete
 RUN /opt/conda/bin/conda clean -afy
 
-COPY requirements.txt /app/
-COPY data /app/
-COPY output/ /app/
-COPY data/mnist.csv /app/data/
-COPY *.py /app/
+RUN git clone https://github.com/ninoyrahman/ML.git
 
-WORKDIR /app
+WORKDIR /ML
 
 RUN pip install -r requirements.txt
 

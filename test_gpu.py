@@ -4,13 +4,17 @@ import cupy as cp
 import pandas as pd
 import time
 import sys
+import os
 
 from gradient_descent import gradient_descent
 from stochastic_gradient_descent import stochastic_gradient_descent
 from adam import adam
 
 orig_stdout = sys.stdout
-f = open('out.txt', 'w')
+output_path = os.getcwd() + '/output/'
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+f = open('output/out.txt', 'w')
 sys.stdout = f
 
 # read mnist data

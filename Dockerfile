@@ -22,6 +22,7 @@ RUN /opt/conda/bin/conda clean -afy
 
 COPY requirements.txt /app/
 COPY data /app/
+COPY output/ /app/
 COPY data/mnist.csv /app/data/
 COPY *.py /app/
 

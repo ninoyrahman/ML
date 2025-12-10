@@ -24,6 +24,7 @@ RUN git clone https://github.com/ninoyrahman/ML.git
 
 WORKDIR /ML
 
-RUN pip install -r requirements.txt
+RUN git pull && \
+    pip install -r requirements.txt
 
 CMD [ "python", "test_gpu.py" ]
